@@ -1,0 +1,165 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  REGISTRY_URL: 'https://registry.npmjs.org'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Instalar dependencias
+      run: npm ci
+      
+    - name: Ejecutar linter
+      run: npm run lint --if-present
+      
+    - name: Ejecutar tests
+      run: npm test
+      
+    - name: Ejecutar build
+      run: npm run build --if-present
+
+  version-and-tag:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      new-version: ${{ steps.version.outputs.new-version }}
+      version-changed: ${{ steps.version.outputs.version-changed }}
+      
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Instalar dependencias
+      run: npm ci
+      
+    - name: Configurar Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+    - name: Determinar tipo de versión
+      id: version-type
+      run: |
+        if git log --format=%B -n 1 ${{ github.sha }} | grep -q "BREAKING CHANGE"; then
+          echo "version-type=major" >> $GITHUB_OUTPUT
+        elif git log --format=%B -n 1 ${{ github.sha }} | grep -qE "^feat(\(.+\))?: "; then
+          echo "version-type=minor" >> $GITHUB_OUTPUT  
+        else
+          echo "version-type=patch" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Incrementar versión
+      id: version
+      run: |
+        OLD_VERSION=$(node -p "require('./package.json').version")
+        npm version ${{ steps.version-type.outputs.version-type }} --no-git-tag-version
+        NEW_VERSION=$(node -p "require('./package.json').version")
+        
+        if [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
+          echo "version-changed=true" >> $GITHUB_OUTPUT
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          
+          git add package.json
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git tag "v$NEW_VERSION"
+          git push origin main
+          git push origin "v$NEW_VERSION"
+        else
+          echo "version-changed=false" >> $GITHUB_OUTPUT
+        fi
+
+  publish:
+    needs: [test, version-and-tag]
+    runs-on: ubuntu-latest
+    if: needs.version-and-tag.outputs.version-changed == 'true'
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        registry-url: ${{ env.REGISTRY_URL }}
+        cache: 'npm'
+        
+    - name: Instalar dependencias
+      run: npm ci
+      
+    - name: Build para producción
+      run: npm run build:prod --if-present
+      
+    - name: Verificar build
+      run: npm pack --dry-run
+      
+    - name: Publicar a NPM
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    needs: [version-and-tag, publish]
+    runs-on: ubuntu-latest
+    if: needs.version-and-tag.outputs.version-changed == 'true'
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        
+    - name: Crear Release en GitHub
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ needs.version-and-tag.outputs.new-version }}
+        release_name: Release v${{ needs.version-and-tag.outputs.new-version }}
+        body: |
+          ## Cambios en esta versión
+          
+          - Versión actualizada automáticamente
+          - Tests ejecutados exitosamente
+          - Build verificado
+          
+          ### Instalación
+          ```bash
+          npm install ${{ github.event.repository.name }}@${{ needs.version-and-tag.outputs.new-version }}
+          ```
+        draft: false
+        prerelease: false
