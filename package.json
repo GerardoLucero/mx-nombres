@@ -1,79 +1,41 @@
 {
-  "name": "mx-nombres"
-  "version": "1.0.0"
-  "type": "module"
-  "description": "Base de datos completa de nombres mexicanos con estadísticas y validaciones"
-  "main": "dist/index.js"
-  "module": "dist/index.esm.js"
-  "types": "dist/index.d.ts"
-  "files": [
-    "dist"
-    "README.md"
-    "LICENSE"
-  ]
+  "name": "mx-nombres",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Librería mexicana",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
-    "build": "microbundle --no-compress"
-    "build:prod": "microbundle"
-    "test": "jest"
-    "test:watch": "jest --watch"
-    "test:coverage": "jest --coverage"
-    "lint": "eslint src/**/*.js"
-    "lint:fix": "eslint src/**/*.js --fix"
-    "prepare": "npm run build"
+    "build": "microbundle --no-compress",
+    "build:prod": "microbundle",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run test && npm run lint && npm run build:prod"
-    "version:patch": "npm version patch"
-    "version:minor": "npm version minor"
-    "version:major": "npm version major"
-  }
-  "keywords": [
-    "mexico"
-    "mexican"
-    "mx"
-  ]
-  "author": {
-    "name": "Gerardo Lucero"
-    "email": "tu-email@ejemplo.com"
-  }
-  "license": "MIT"
-  "repository": {
-    "type": "git"
-    "url": "https://github.com/GerardoLucero/mx-nombres.git"
-  }
-  "bugs": {
-    "url": "https://github.com/GerardoLucero/mx-nombres/issues"
-  }
-  "homepage": "https://github.com/GerardoLucero/mx-nombres#readme"
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  },
+  "keywords": ["mexico", "mexican", "mx"],
+  "author": {"name": "Gerardo Lucero", "email": "tu-email@ejemplo.com"},
+  "license": "MIT",
+  "repository": {"type": "git", "url": "https://github.com/GerardoLucero/mx-nombres.git"},
+  "engines": {"node": ">=18.0.0"},
   "devDependencies": {
-    "@babel/core": "^7.23.0"
-    "@babel/preset-env": "^7.23.0"
-    "@eslint/js": "^8.57.0"
-    "babel-jest": "^29.7.0"
-    "eslint": "^8.57.0"
-    "jest": "^29.7.0"
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@eslint/js": "^8.57.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
     "microbundle": "^0.15.1"
-  }
-  "dependencies": {
-    
-  }
+  },
   "jest": {
-    "testEnvironment": "node"
-    "transform": {
-      "^.+\\.js$": "babel-jest"
-    }
-    "collectCoverageFrom": [
-      "src/**/*.js"
-      "!src/**/*.test.js"
-    ]
-    "coverageThreshold": {
-      "global": {
-        "branches": 85
-        "functions": 90
-        "lines": 90
-        "statements": 90
-      }
-    }
+    "testEnvironment": "node",
+    "transform": {"^.+\.js$": "babel-jest"},
+    "collectCoverageFrom": ["src/**/*.js", "!src/**/*.test.js"],
+    "coverageThreshold": {"global": {"branches": 85, "functions": 90, "lines": 90, "statements": 90}}
   }
 }
