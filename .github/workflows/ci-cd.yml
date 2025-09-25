@@ -7,6 +7,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 env:
   NODE_VERSION: '18'
   REGISTRY_URL: 'https://registry.npmjs.org'
@@ -40,77 +44,15 @@ jobs:
     - name: Ejecutar build
       run: npm run build --if-present
 
-  version-and-tag:
+  publish:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    outputs:
-      new-version: ${{ steps.version.outputs.new-version }}
-      version-changed: ${{ steps.version.outputs.version-changed }}
-      
-    steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        
-    - name: Instalar dependencias
-      run: npm install
-      
-    - name: Configurar Git
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-    - name: Determinar tipo de versión
-      id: version-type
-      run: |
-        if git log --format=%B -n 1 ${{ github.sha }} | grep -q "BREAKING CHANGE"; then
-          echo "version-type=major" >> $GITHUB_OUTPUT
-        elif git log --format=%B -n 1 ${{ github.sha }} | grep -qE "^feat(\(.+\))?: "; then
-          echo "version-type=minor" >> $GITHUB_OUTPUT  
-        else
-          echo "version-type=patch" >> $GITHUB_OUTPUT
-        fi
-        
-    - name: Incrementar versión
-      id: version
-      run: |
-        OLD_VERSION=$(node -p "require('./package.json').version")
-        npm version ${{ steps.version-type.outputs.version-type }} --no-git-tag-version
-        NEW_VERSION=$(node -p "require('./package.json').version")
-        
-        if [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
-          echo "version-changed=true" >> $GITHUB_OUTPUT
-          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          
-          git add package.json
-          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
-          git tag "v$NEW_VERSION"
-          git push origin main
-          git push origin "v$NEW_VERSION"
-        else
-          echo "version-changed=false" >> $GITHUB_OUTPUT
-        fi
-
-  publish:
-    needs: [test, version-and-tag]
-    runs-on: ubuntu-latest
-    if: needs.version-and-tag.outputs.version-changed == 'true'
     
     steps:
     - name: Checkout código
       uses: actions/checkout@v4
-      with:
-        ref: main
-        
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -121,45 +63,57 @@ jobs:
     - name: Instalar dependencias
       run: npm install
       
-    - name: Build para producción
-      run: npm run build:prod --if-present
+    - name: Ejecutar build
+      run: npm run build --if-present
       
-    - name: Verificar build
-      run: npm pack --dry-run
+    - name: Ejecutar tests
+      run: npm test
       
-    - name: Publicar a NPM
-      run: npm publish --access public
+    - name: Verificar si versión ya existe en NPM
+      id: check-version
+      run: |
+        PACKAGE_NAME=$(node -p "require('./package.json').name")
+        PACKAGE_VERSION=$(node -p "require('./package.json').version")
+        
+        echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+        echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+        
+        if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
+          echo "Version $PACKAGE_VERSION already exists on NPM"
+          echo "should-publish=false" >> $GITHUB_OUTPUT
+        else
+          echo "Version $PACKAGE_VERSION does not exist on NPM, will publish"
+          echo "should-publish=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Publicar en NPM
+      if: steps.check-version.outputs.should-publish == 'true'
+      run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  release:
-    needs: [version-and-tag, publish]
-    runs-on: ubuntu-latest
-    if: needs.version-and-tag.outputs.version-changed == 'true'
-    
-    steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
-      with:
-        ref: main
         
-    - name: Crear Release en GitHub
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Crear GitHub Release
+      if: steps.check-version.outputs.should-publish == 'true'
+      uses: actions/github-script@v7
       with:
-        tag_name: v${{ needs.version-and-tag.outputs.new-version }}
-        release_name: Release v${{ needs.version-and-tag.outputs.new-version }}
-        body: |
-          ## Cambios en esta versión
+        script: |
+          const { data: release } = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: `v${{ steps.check-version.outputs.version }}`,
+            name: `Release v${{ steps.check-version.outputs.version }}`,
+            body: `## Cambios en esta versión
           
-          - Versión actualizada automáticamente
-          - Tests ejecutados exitosamente
-          - Build verificado
+          - Versión ${{ steps.check-version.outputs.version }} publicada automáticamente
+          - Tests pasando: ✅
+          - Linting pasando: ✅
+          - Build exitoso: ✅
           
-          ### Instalación
-          ```bash
-          npm install ${{ github.event.repository.name }}@${{ needs.version-and-tag.outputs.new-version }}
-          ```
-        draft: false
-        prerelease: false
+          Para instalar esta versión:
+          \`\`\`bash
+          npm install ${{ steps.check-version.outputs.name }}@${{ steps.check-version.outputs.version }}
+          \`\`\``,
+            draft: false,
+            prerelease: false
+          });
+          console.log(`Release created: ${release.html_url}`);
