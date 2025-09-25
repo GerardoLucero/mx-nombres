@@ -1,6 +1,6 @@
 {
   "name": "mx-nombres",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "Base de datos completa de nombres mexicanos con estadísticas y validaciones",
   "main": "dist/index.js",
