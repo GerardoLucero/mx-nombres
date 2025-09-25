@@ -2,11 +2,15 @@
   "name": "mx-nombres",
   "version": "1.0.0",
   "type": "module",
-  "description": "Librería mexicana",
+  "description": "Base de datos completa de nombres mexicanos con estadísticas y validaciones",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "microbundle --no-compress",
     "build:prod": "microbundle",
@@ -18,11 +22,24 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run test && npm run lint && npm run build:prod"
   },
-  "keywords": ["mexico", "mexican", "mx"],
-  "author": {"name": "Gerardo Lucero", "email": "tu-email@ejemplo.com"},
+  "keywords": [
+    "mexico",
+    "names",
+    "nombres",
+    "database"
+  ],
+  "author": {
+    "name": "Gerardo Lucero",
+    "email": "tu-email@ejemplo.com"
+  },
   "license": "MIT",
-  "repository": {"type": "git", "url": "https://github.com/GerardoLucero/mx-nombres.git"},
-  "engines": {"node": ">=18.0.0"},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GerardoLucero/mx-nombres.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.23.0",
     "@babel/preset-env": "^7.23.0",
@@ -34,8 +51,20 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "transform": {"^.+\.js$": "babel-jest"},
-    "collectCoverageFrom": ["src/**/*.js", "!src/**/*.test.js"],
-    "coverageThreshold": {"global": {"branches": 85, "functions": 90, "lines": 90, "statements": 90}}
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 85,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    }
   }
 }

@@ -269,8 +269,8 @@ export function generarNombreCompleto(opciones = {}) {
     incluirNombreIndigena = Math.random() > 0.9
   } = opciones;
   
-  let nombres = [];
-  let apellidos = [];
+  const nombres = [];
+  const apellidos = [];
   
   // Seleccionar nombre principal
   if (genero === 'masculino') {
@@ -365,7 +365,7 @@ export function validarNombreMexicano(nombre) {
   const resultados = buscarNombre(nombre, { exacto: true });
   const esMexicano = resultados.total > 0;
   
-  let categoria = [];
+  const categoria = [];
   let popularidad = 0;
   
   if (resultados.masculinos.length > 0) {
