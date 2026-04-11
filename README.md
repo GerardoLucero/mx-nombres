@@ -1,6 +1,7 @@
 # mx-nombres
 
 [![npm version](https://badge.fury.io/js/mx-nombres.svg)](https://badge.fury.io/js/mx-nombres)
+[![npm downloads](https://img.shields.io/npm/dm/mx-nombres.svg)](https://www.npmjs.com/package/mx-nombres)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Base de datos completa de nombres mexicanos con estadísticas de popularidad, origen, significado y validaciones.
