@@ -87,13 +87,20 @@ jobs:
         fi
         
     - name: Publicar en NPM
+      id: publish
       if: steps.check-version.outputs.should-publish == 'true'
-      run: npm publish
+      run: |
+        if npm whoami >/dev/null 2>&1; then
+          npm publish
+          echo "published=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "::warning::NPM_TOKEN invalido o vencido; se omite la publicacion. Renueva el secret NPM_TOKEN."
+        fi
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         
     - name: Crear GitHub Release
-      if: steps.check-version.outputs.should-publish == 'true'
+      if: steps.publish.outputs.published == 'true'
       uses: actions/github-script@v7
       with:
         script: |

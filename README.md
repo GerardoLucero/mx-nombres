@@ -2,12 +2,10 @@
 
 Base de datos completa de nombres mexicanos con estadísticas de popularidad, origen, significado y validaciones.
 
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/gerardolucero)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/lucerorios0)
-[![GitHub Stars](https://img.shields.io/github/stars/GerardoLucero/mx-nombres?style=social)](https://github.com/GerardoLucero/mx-nombres)
 [![npm version](https://badge.fury.io/js/mx-nombres.svg)](https://badge.fury.io/js/mx-nombres)
 [![npm downloads](https://img.shields.io/npm/dm/mx-nombres.svg)](https://www.npmjs.com/package/mx-nombres)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/GerardoLucero/mx-nombres/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/GerardoLucero/mx-nombres/actions/workflows/ci-cd.yml)
 
 ## Features
 
@@ -159,6 +157,13 @@ npm run test:coverage
 npm run lint
 ```
 
+## Apoyo
+
+Proyecto de código abierto mantenido en mi tiempo libre. Si te fue útil y quieres agradecerlo:
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=flat&logo=ko-fi&logoColor=white)](https://ko-fi.com/gerardolucero)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/lucerorios0)
+
 ## Licencia
 
-MIT © [Gerardo Lucero](https://github.com/GerardoLucero)
+MIT © [Gerardo Lucero](https://github.com/GerardoLucero), ver [LICENSE](LICENSE).
